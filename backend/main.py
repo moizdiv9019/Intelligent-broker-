@@ -1,8 +1,13 @@
 from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status
-from models import AuthRequest
+from models import AuthRequest , UpdateNameRequest
 from auth import get_current_user
 from config import supabase
+from db import get_db
+from models import User
+from sqlalchemy.orm.session import Session
+from sqlalchemy import update
+
 
 app = FastAPI(title="FastAPI")
 
@@ -41,12 +46,16 @@ def login(payload: AuthRequest):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.get("/protected/profile")
-def read_protected_profile(
-    current_user: Annotated[dict, Depends(get_current_user)]
-):
-    """Protected endpoint: only accessible with a valid Supabase JWT."""
-    return {
-        "message": "Access granted!",
-        "user": current_user,
-    }
+@app.patch("/user")
+def set_name(payload:UpdateNameRequest,current_user: Annotated[dict, Depends(get_current_user)],db:Annotated[Session,Depends(get_db)])->dict:
+    user_id=current_user['id']
+    stmt = (
+        update(User)
+        .where(User.uid == user_id)
+        .values(displayname=payload.displayname.strip())
+    )
+
+    db.execute(stmt)
+    db.commit()
+    
+    return {"message": "Display name updated", "displayname": payload.displayname.strip()}

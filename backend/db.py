@@ -14,6 +14,15 @@ engine=create_engine(data_base_url,poolclass=NullPool)
 #creating an session
 session =sessionmaker(autoflush=False,bind=engine)
 
+def get_db():
+   db=session()
+   try: 
+      yield db
+   finally:
+      db.close()
+
+get_db
+
 
 
 

@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from uuid import UUID as PyUUID
 from sqlalchemy import Column, String, Text, Numeric, Integer, ForeignKey, DateTime, text
 from sqlalchemy.orm import declarative_base, relationship
-from pydantic import BaseModel
+from pydantic import BaseModel ,Field
 
 
 Base = declarative_base()
@@ -161,3 +161,7 @@ class LeadCreate(BaseModel):
 class AuthRequest(BaseModel):
     email: str
     password: str
+
+#updating user display name 
+class UpdateNameRequest(BaseModel):
+    displayname: str = Field(..., min_length=1, max_length=50)
