@@ -28,7 +28,7 @@ class Inventory(Base):
     __tablename__ = "inventory"
 
     inventory_id = Column(Integer, primary_key=True, autoincrement=True)
-    broker_id = Column(String, ForeignKey("users.uid"), nullable=False)  # String representation
+    broker_id = Column(UUID(as_uuid=True), ForeignKey("users.uid"), nullable=False)  # String representation
     asset_type = Column(String, nullable=False)
     base_price = Column(Numeric, nullable=False)
     title = Column(String, nullable=False)
@@ -57,7 +57,7 @@ class Customer(Base):
     __tablename__ = "customer"
 
     customer_id = Column(Integer, primary_key=True, autoincrement=True)
-    broker_id = Column(String, ForeignKey("users.uid"), nullable=False)  # String representation
+    broker_id = Column(UUID(as_uuid=True), ForeignKey("users.uid"), nullable=False)  # String representation
     name = Column(Text, nullable=False)
     phone_number = Column(String, nullable=False)
 
@@ -71,7 +71,7 @@ class CustomerQuery(Base):
     __tablename__ = "customer_queries"
 
     query_id = Column(Integer, primary_key=True, autoincrement=True)
-    broker_id = Column(String, ForeignKey("users.uid"), nullable=False)  # String representation
+    broker_id = Column(UUID(as_uuid=True), ForeignKey("users.uid"), nullable=False)  # String representation
     customer_id = Column(Integer, ForeignKey("customer.customer_id"), nullable=False)
     requested_inventory_id = Column(Integer, ForeignKey("inventory.inventory_id"), nullable=True)
     source = Column(String, nullable=False)
@@ -95,7 +95,7 @@ class Lead(Base):
     __tablename__ = "leads"
 
     lead_id = Column(Integer, primary_key=True, autoincrement=True)
-    broker_id = Column(String, ForeignKey("users.uid"), nullable=False)  # String representation
+    broker_id = Column(UUID(as_uuid=True), ForeignKey("users.uid"), nullable=False)  # String representation
     customer_id = Column(Integer, ForeignKey("customer.customer_id"), nullable=False)
     query_id = Column(Integer, ForeignKey("customer_queries.query_id"), nullable=False)
     status = Column(String, nullable=False, server_default=text("'new'::character varying"))
@@ -115,13 +115,12 @@ class Lead(Base):
 
 # 2. PYDANTIC DATA VALIDATION SCHEMAS (String UUIDs)
 
-
 class UserSetName(BaseModel):
     uid: PyUUID   # FastAPI sends it to the client as a normal string
     displayname: str
 
+#Inventory creating model 
 class InventoryCreate(BaseModel):
-    broker_id: str
     asset_type: str
     base_price: Decimal
     title: str

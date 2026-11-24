@@ -4,9 +4,10 @@ from models import AuthRequest , UpdateNameRequest
 from auth import get_current_user
 from config import supabase
 from db import get_db
-from models import User
+from models import User ,InventoryCreate,Inventory
 from sqlalchemy.orm.session import Session
 from sqlalchemy import update
+import uuid
 
 
 app = FastAPI(title="FastAPI")
@@ -46,16 +47,32 @@ def login(payload: AuthRequest):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
+
 @app.patch("/user")
 def set_name(payload:UpdateNameRequest,current_user: Annotated[dict, Depends(get_current_user)],db:Annotated[Session,Depends(get_db)])->dict:
+    " endpoint to set user name on the system"
     user_id=current_user['id']
     stmt = (
         update(User)
         .where(User.uid == user_id)
         .values(displayname=payload.displayname.strip())
     )
-
     db.execute(stmt)
     db.commit()
     
     return {"message": "Display name updated", "displayname": payload.displayname.strip()}
+
+
+@app.post("/inventory")
+def upload_inventory(payload:InventoryCreate,current_user: Annotated[dict, Depends(get_current_user)],db:Annotated[Session,Depends(get_db)]):
+    "endpoin to upload new inventory listing data"
+    raw_id = current_user["id"]
+    broker_uuid = raw_id if isinstance(raw_id, uuid.UUID) else uuid.UUID(raw_id)
+    inventory_data=Inventory(**payload.model_dump(),broker_id=broker_uuid)
+    db.add(inventory_data)
+    db.commit()
+    db.refresh(inventory_data)
+
+    return inventory_data
+
+

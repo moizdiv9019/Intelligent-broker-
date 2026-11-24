@@ -33,8 +33,7 @@ def login(payload: AuthRequest):
             "email": payload.email,
             "password": payload.password,
         })
-        return {
-            "access_token": res.session.access_token,
+        return {            "access_token": res.session.access_token,
             "token_type": "bearer",
         }
     except Exception as e:
